@@ -112,7 +112,7 @@ ProvisioningEditor::ProvisioningEditor(QWidget* parent) : QDialog(parent)
 
   group_ipv6 = new QActionGroup(this);
   group_ipv6->addAction(ui.actionServiceIPv6Off);
-  group_ipv6->addAction(ui. actionServiceIPv6Auto);
+  group_ipv6->addAction(ui.actionServiceIPv6Auto);
   group_ipv6->addAction(ui.actionServiceIPv6Address);
   
   // Add Actions from UI to menu's

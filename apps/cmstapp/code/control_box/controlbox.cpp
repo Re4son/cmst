@@ -60,6 +60,7 @@ DEALINGS IN THE SOFTWARE.
 # include <QImage>
 # include <QDesktopWidget>
 # include <QInputDialog>
+# include <QScrollBar>
 
 # include "../resource.h"
 # include "./controlbox.h"
@@ -1732,7 +1733,7 @@ void ControlBox::assembleTabStatus()
       st = technologies_list.at(row).objmap.value("Name").toString();
       qtwi00->setText(TranslateStrings::cmtr(st) );
       qtwi00->setTextAlignment(Qt::AlignCenter);
-      ui.tableWidget_technologies->setItem(row, 0, qtwi00) ;
+      ui.tableWidget_technologies->setItem(row, 0, qtwi00);
 
       QTableWidgetItem* qtwi01 = new QTableWidgetItem();
       st = technologies_list.at(row).objmap.value("Type").toString();
@@ -1793,6 +1794,22 @@ void ControlBox::assembleTabStatus()
     ui.tableWidget_technologies->resizeColumnToContents(0);
     ui.tableWidget_technologies->resizeColumnToContents(1);
     ui.tableWidget_technologies->resizeColumnToContents(3);
+
+    int height = 0;
+    ui.tableWidget_technologies->resizeRowsToContents();
+    for (int i = 0; i < ui.tableWidget_technologies->rowCount(); i++) {
+        height += ui.tableWidget_technologies->rowHeight(i);
+    }
+
+    int left, top, right, bottom;
+    ui.tableWidget_technologies->getContentsMargins(&left, &top, &right, &bottom);
+    height += top + bottom;
+    height += ui.tableWidget_technologies->horizontalHeader()->frameSize().height();
+    if (ui.tableWidget_technologies->horizontalScrollBar()) {
+        height += ui.tableWidget_technologies->horizontalScrollBar()->height();
+    }
+
+    ui.tableWidget_technologies->setMinimumHeight(height);
 
   } // technologies if no error
 
