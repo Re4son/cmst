@@ -1,0 +1,88 @@
+cmst (2016.10.03+gemian) stretch; urgency=medium
+
+  * Branched for gemian
+
+ -- Adam Boardman <adamboardman@gmail.com>  Sat, 3 May 2018 22:56:03 +0000
+
+cmst (2016.10.03-2) unstable; urgency=medium
+
+  * Added dbus-policy.patch (already applied upstream)
+  * Added keywords.patch (already applied upstream
+  * Added surpress-vpn-warning.patch, applied upstream
+    (Closes: #842444)
+ 
+ -- Alf Gaida <agaida@siduction.org>  Sun, 06 Nov 2016 15:49:12 +0100
+
+cmst (2016.10.03-1) unstable; urgency=medium
+
+  * Cherry-picking upstream version 2016.10.03.
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 09 Oct 2016 01:24:25 +0200
+
+cmst (2016.10.02-1) unstable; urgency=medium
+
+  * Cherry-picking upstream version 2016.10.02.
+  * Bumped minimim version debhelper (>= 10)
+  * Bumped compat to 10
+  * Bumped standards to 3.9.8, no changes needed 
+  * Removed --parallel from rules, compat 10 standard
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 02 Oct 2016 15:05:56 +0200
+
+cmst (2016.04.03-2) unstable; urgency=medium
+
+  * Fixed wrong distribution in roothelper config
+    (Thanks wCPO, nice finding)
+  * Make the description for the icon patch more clear
+
+ -- Alf Gaida <agaida@siduction.org>  Thu, 09 Jun 2016 01:46:31 +0200
+
+cmst (2016.04.03-1) unstable; urgency=medium
+
+  * Cherry-picking upstream version 2016.04.03.
+  * set Distro to debian in rules
+  * Removed date-time-patch, applied upstream
+  * Removed re-release patch
+  * fixed VCS-fields
+  * Bump Standards to 3.9.7
+  * README.md added to debian/docs
+
+ -- Alf Gaida <agaida@siduction.org>  Mon, 04 Apr 2016 23:29:17 +0200
+
+cmst (2016.01.28-2) unstable; urgency=medium
+
+  * Set Architecture: linux-any, cmst depends on connman what is
+    only available on linux architectures. Closes: #813166 
+
+ -- Alf Gaida <agaida@siduction.org>  Sat, 30 Jan 2016 11:26:23 +0100
+
+cmst (2016.01.28-1) unstable; urgency=medium
+
+  * Cherry-picking upstream version 2016.01.28.
+  * Use safe VCS-links
+  * Added hardening=+all
+  * Changed years in copyright
+  * Added re-release patch to match the displayed version with 
+    tar-ball and package version
+  * Added remove_DATE_TIME.patch to make reproducible builds possible
+
+ -- Alf Gaida <agaida@siduction.org>  Fri, 29 Jan 2016 21:49:12 +0100
+
+cmst (2015.12.03-2) unstable; urgency=medium
+
+  * Remove dbg package in favor of dbgsym.
+
+ -- Alf Gaida <agaida@siduction.org>  Sat, 26 Dec 2015 12:19:48 +0100
+
+cmst (2015.12.03-1) unstable; urgency=medium
+
+  * Cherry-picking upstream version 2015.12.03.
+  * Removed extra license file
+
+ -- Alf Gaida <agaida@siduction.org>  Thu, 17 Dec 2015 01:17:06 +0100
+
+cmst (2015.09.10-1) unstable; urgency=medium
+
+  * Initial release.  Closes: #751104
+
+ -- Alf Gaida <agaida@siduction.org>  Fri, 11 Sep 2015 17:39:20 +0200
