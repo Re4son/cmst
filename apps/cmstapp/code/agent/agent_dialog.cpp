@@ -36,6 +36,7 @@ DEALINGS IN THE SOFTWARE.
 # include <QDir>
 # include <QMessageBox>
 # include <QStringListModel>
+# include <QDesktopWidget>
 
 # include "./agent_dialog.h"
 # include "./code/trstring/tr_strings.h"
@@ -46,6 +47,16 @@ AgentDialog::AgentDialog(QWidget* parent)
 	// setup the user interface
   ui.setupUi(this);
   	  
+  // Make sure the agent dialog will fit onto small acreens
+  QSize sz_target = (qApp->desktop()->availableGeometry(this)).size();
+  QSize sz_source = this->sizeHint();
+  sz_target.scale(sz_target.width() - 100, sz_target.height() - 100, Qt::KeepAspectRatio); // give me a little buffer
+  if (sz_source.width() > sz_target.width() || sz_source.height() > sz_target.height() ) {
+    sz_source.scale(sz_target.width(), sz_target.height(), Qt::KeepAspectRatio);
+    resize(sz_source);
+    move(25, 25);
+  }
+
   // data members
   cli_browsers.clear();	  
  	cli_browsers << "lynx" << "w3m" << "links" << "elinks";
