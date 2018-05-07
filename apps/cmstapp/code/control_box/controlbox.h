@@ -114,11 +114,13 @@ class ControlBox : public QDialog
     Ui::ControlBox ui;
     quint16 q16_errors;
     QMap<QString,QVariant>  properties_map;
-    QList<arrayElement>   services_list;
-    QList<arrayElement>   technologies_list;
-    QList<arrayElement>   wifi_list;
-    QList<arrayElement>   peer_list;
-    QList<arrayElement> 	vpn_list;
+    QList<arrayElement>     services_list;
+    QList<arrayElement>     technologies_list;
+    QList<arrayElement>     wifi_list;
+    QList<arrayElement>     peer_list;
+    QList<arrayElement>     vpn_list;
+    QList<arrayElement>     sim_list;
+    int selected_sim;
     ConnmanAgent* agent;
     ConnmanVPNAgent* vpnagent;
     ConnmanCounter* counter;  
@@ -128,6 +130,7 @@ class ControlBox : public QDialog
     quint32 counter_period;       
     QDBusInterface* con_manager;
     QDBusInterface* vpn_manager;
+    QDBusInterface* ofono_manager;
     QSystemTrayIcon*  trayicon;
     QMenu* trayiconmenu;
     QMenu* tech_submenu;
@@ -152,6 +155,7 @@ class ControlBox : public QDialog
     int managerRescan(const int& srv = 0);
     void assembleTabStatus();
     void assembleTabDetails();
+    void assembleTabMobile();
     void assembleTabWireless();
     void assembleTabVPN();
     void assembleTabCounters();
@@ -177,6 +181,7 @@ class ControlBox : public QDialog
     void disconnectPressed();
     void removePressed();
     void dbsPropertyChanged(QString,QDBusVariant);
+    void dbsModemsChanged(QList<QVariant>, QList<QDBusObjectPath>, QDBusMessage);
     void dbsServicesChanged(QList<QVariant>, QList<QDBusObjectPath>, QDBusMessage);
     void dbsPeersChanged(QList<QVariant>, QList<QDBusObjectPath>, QDBusMessage);
     void dbsServicePropertyChanged(QString, QDBusVariant, QDBusMessage);
@@ -189,6 +194,12 @@ class ControlBox : public QDialog
     void toggleTrayIcon(bool);
     void togglePowered(QString, bool);
     void toggleTethered(QString, bool);
+    bool getModems();
+    void selectSim(QListWidgetItem*);
+    void toggleOfonoEnabled(bool);
+    void toggleOfonoPowered(bool);
+    void toggleMobileData(bool);
+    void toggleMobileDataRoaming(bool);
     void minMaxWindow(QAction* = 0);
     void techSubmenuTriggered(QAction* = 0);
     void infoSubmenuTriggered(QAction* = 0);

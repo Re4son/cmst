@@ -67,8 +67,9 @@ namespace CMST
     Err_Properties        = (1 << 2), // There was an error reading connman.Manager.GetProperties
     Err_Technologies      = (1 << 3), // There was an error reading connman.Manager.GetTechnologies       
     Err_Services          = (1 << 4), // There was an error reading connman.Manager.GetServices 
-    Err_Invalid_VPN_Iface = (1 << 5), // Invalid interface 
-    
+    Err_Invalid_VPN_Iface = (1 << 5), // Invalid VPN interface
+    Err_Invalid_OFONO_Iface = (1 << 6), // Invalid OFONO interface
+
     // methods
     Manager_Properties    = (1 << 1), // scan for properties
     Manager_Technologies  = (1 << 2), // scan for technologies  

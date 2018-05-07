@@ -1,0 +1,73 @@
+List of useful info from UBPorts NetworkManager
+-----------------------------------------------
+
+Sims count:
+
+0 - no sim
+
+1 - single sim
+find a valid sim in the list
+
+2+ - multi sim
+
+Ubuntu.Connectivity
+ - modems : list of modems
+ - simForMobileData : one from the list
+ - mobileDataEnabled
+
+OfonoModem
+ - Sim : the sim
+ - Sim.DataRoamingEnabled
+ - sim.radioSettings.availableTechnologies
+ - sim.radioSettings.technologyPreference = 'umts';
+    'gsm': i18n.tr("2G only (saves battery)"),
+    'umts': i18n.tr("2G/3G (faster)"),
+    'lte': i18n.tr("2G/3G/4G (faster)")
+ - sim.connMan.powered
+ - Sim.PrimaryPhoneNumber
+ - Sim.Imsi
+ - interfaces.indexOf('org.ofono.MtkSettings') > 0 == mtksettings valid
+
+OfonoManager:
+ - onModemsChanged
+   - update lists
+
+OfonoRadioSettings
+
+OfonoNetworkOperator:
+ - onRegisterComplete
+   - error !== OfonoNetworkOperator.NoError fall back to default sim.netReg.registration()
+
+OfonoNetworkRegistration: (sim.netReg)
+
+OfonoConnMan
+
+OfonoMtkSettings
+ - sim.mtkSettings.has3G = true;
+
+UbuntuCellularPanel
+ - simNames
+ - defaultSimForCalls
+ - defaultSimForMessages
+
+OfonoSimManager
+Sim handlers:
+ - onUmtsModemChanged
+   - unlockAllModems
+
+ - onScanError
+   - if message === "Operation already in progress" ignore error
+
+ - mode == auto?
+
+ - sim.netReg.networkOperators - CHelper.getOps list of operators
+   - sim.netReg.currentOperatorPath
+
+
+APN: (can be combined (internet+mms) or individual)
+ - mms : MMS APN
+ - internet+mms : Internet APN (combined)
+ - internet : Internet APN
+ - ia : LTE APN
+
+Ubuntu.SystemSettings.Cellular - Connectivity - UbuntuCellularPanel -> AccountsService settings (settings saved with properties)

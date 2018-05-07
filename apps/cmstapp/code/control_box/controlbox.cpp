@@ -81,6 +81,8 @@ DEALINGS IN THE SOFTWARE.
 # define DBUS_VPN_SERVICE "net.connman.vpn"
 # define DBUS_CON_MANAGER "net.connman.Manager"
 # define DBUS_VPN_MANAGER "net.connman.vpn.Manager"
+# define DBUS_OFONO_SERVICE "org.ofono"
+# define DBUS_OFONO_MANAGER "org.ofono.Manager"
 
 // Custom push button, used in the technology box for powered on/off
 // This is really a single use button, after it is clicked all idButtons
@@ -142,6 +144,8 @@ ControlBox::ControlBox(const QCommandLineParser& parser, QWidget *parent)
   wifi_list.clear();
   peer_list.clear();
   vpn_list.clear();
+  sim_list.clear();
+  selected_sim = 0;
   agent = new ConnmanAgent(this);
   vpnagent = new ConnmanVPNAgent(this);
   counter = new ConnmanCounter(this);
@@ -354,6 +358,17 @@ ControlBox::ControlBox(const QCommandLineParser& parser, QWidget *parent)
       // clear the counters if selected
       this->clearCounters();
 
+      // Mobile manager.
+      ofono_manager = new QDBusInterface(DBUS_OFONO_SERVICE, DBUS_PATH, DBUS_OFONO_MANAGER, QDBusConnection::systemBus(), this);
+      if (! ofono_manager->isValid() ) {
+          ui.tabWidget->setTabEnabled(ui.tabWidget->indexOf(ui.Mobile), false);
+          logErrors(CMST::Err_Invalid_OFONO_Iface);
+      } else {
+          ui.tabWidget->setTabEnabled(ui.tabWidget->indexOf(ui.Mobile), true);
+          getModems();
+          QDBusConnection::systemBus().connect(DBUS_OFONO_SERVICE, DBUS_PATH, DBUS_OFONO_MANAGER, "ModemsChanged", this, SLOT(dbsModemsChanged(QList<QVariant>, QList<QDBusObjectPath>, QDBusMessage)));
+      }
+
       // VPN manager. Disable if commandline or option is set
       if (parser.isSet("disable-vpn") ? true : (b_so && ui.checkBox_disablevpn->isChecked()) ) {
         ui.tabWidget->setTabEnabled(ui.tabWidget->indexOf(ui.VPN), false);
@@ -423,6 +438,11 @@ ControlBox::ControlBox(const QCommandLineParser& parser, QWidget *parent)
   connect(ui.checkBox_hidetethering, SIGNAL (toggled(bool)), this, SLOT(updateDisplayWidgets()));
   connect(ui.checkBox_systemtraynotifications, SIGNAL (clicked(bool)), this, SLOT(trayNotifications(bool)));
   connect(ui.checkBox_notifydaemon, SIGNAL (clicked(bool)), this, SLOT(daemonNotifications(bool)));
+  connect(ui.listWidget_sims, SIGNAL (itemClicked(QListWidgetItem*)), this, SLOT(selectSim(QListWidgetItem*)));
+  connect(ui.checkBox_ofono_enabled, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoEnabled(bool)));
+  connect(ui.checkBox_ofono_powered, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoPowered(bool)));
+  connect(ui.checkBox_mobile_data, SIGNAL (toggled(bool)), this, SLOT(toggleMobileData(bool)));
+  connect(ui.checkBox_moblie_data_roaming, SIGNAL (toggled(bool)), this, SLOT(toggleMobileDataRoaming(bool)));
   connect(ui.pushButton_configuration, SIGNAL (clicked()), this, SLOT(configureService()));
   connect(ui.pushButton_provisioning_editor, SIGNAL (clicked()), this, SLOT(provisionService()));
   connect(ui.pushButton_vpn_editor, SIGNAL (clicked()), this, SLOT(provisionService()));
@@ -569,6 +589,7 @@ void ControlBox::updateDisplayWidgets()
     //  rebuild our pages
     this->assembleTabStatus();
     this->assembleTabDetails();
+    this->assembleTabMobile();
     this->assembleTabWireless();
     this->assembleTabVPN();
     this->assembleTabCounters();
@@ -913,6 +934,31 @@ void ControlBox::dbsPropertyChanged(QString prop, QDBusVariant dbvalue)
   } // if state change
 
   return;
+}
+
+bool ControlBox::getModems()
+{
+  // call ofono and GetServices
+  QDBusMessage reply = ofono_manager->call("GetModems");
+  shared::processReply(reply);
+
+  // call the function to get the map values
+  sim_list.clear();
+  return getArray(sim_list, reply);
+}
+
+void ControlBox::dbsModemsChanged(QList<QVariant> vlist, QList<QDBusObjectPath> changed, QDBusMessage msg)
+{
+  qDebug("ControlBox::dbsModemsChanged");
+  qDebug() << "ControlBox::dbsModemsChanged vlist:" << vlist << " changed:" << changed.size() << " msg:" << msg;
+  if (! vlist.isEmpty() ) {
+    QList<arrayElement> revised_list;
+    if (! getArray(revised_list, msg)) return;
+
+    sim_list.clear();
+    sim_list = revised_list;
+    updateDisplayWidgets();
+  }
 }
 
 //
@@ -1333,6 +1379,46 @@ void ControlBox::toggleTethered(QString object_id, bool checkstate)
   // cleanup
   iface_tech->deleteLater();
   return;
+}
+
+void ControlBox::selectSim(QListWidgetItem *item)
+{
+  int index = 0;
+  for (int row = 0; row < sim_list.size(); ++row) {
+    if (sim_list.at(row).objpath.path() == item->text()) {
+      index = row;
+    }
+  }
+  selected_sim = index;
+}
+
+void ControlBox::toggleOfonoEnabled(bool)
+{
+    //ofono(UBPorts) + connman(stretch) seems to require a restart of ofono whilst cmst is running for it to keep the itself available, maybe do that here?
+}
+
+void ControlBox::toggleOfonoPowered(bool checked)
+{
+    if ( ((q16_errors & CMST::Err_No_DBus) | (q16_errors & CMST::Err_Invalid_Con_Iface)) != 0x00 ) return;
+
+    QDBusInterface* iface_tech = new QDBusInterface(DBUS_CON_SERVICE, "/net/connman/technology/cellular", "net.connman.Technology", QDBusConnection::systemBus(), this);
+    shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "Powered", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
+}
+
+void ControlBox::toggleMobileData(bool checked)
+{
+    if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00  || sim_list.size() == 0 || selected_sim > sim_list.size()-1 ) return;
+
+    QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), "org.ofono.ConnectionManager", QDBusConnection::systemBus(), this);
+    shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "Powered", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
+}
+
+void ControlBox::toggleMobileDataRoaming(bool checked)
+{
+    if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00  || sim_list.size() == 0 || selected_sim > sim_list.size()-1 ) return;
+
+    QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), "org.ofono.ConnectionManager", QDBusConnection::systemBus(), this);
+    shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "RoamingAllowed", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
 }
 
 //
@@ -1896,6 +1982,21 @@ void ControlBox::assembleTabDetails()
   } // services if no error
 
   return;
+}
+
+void ControlBox::assembleTabMobile()
+{
+  ui.listWidget_sims->clear();
+
+  for (int row = 0; row < sim_list.size(); ++row) {
+    QListWidgetItem* qtsi00 = new QListWidgetItem();
+    qtsi00->setText(sim_list.at(row).objpath.path());
+    qtsi00->setTextAlignment(Qt::AlignCenter);
+    ui.listWidget_sims->addItem(qtsi00);
+  }
+  ui.listWidget_sims->setCurrentRow(selected_sim);
+
+
 }
 
 //
@@ -2833,6 +2934,9 @@ void ControlBox::logErrors(const quint16& err)
 			// error the user would need to be concerned about.  If he is the error will show in the system log.
       syslog(LOG_ERR, "%s",tr("Could not create an interface to connman-vpn on the system bus").toUtf8().constData());
       break;
+    case  CMST::Err_Invalid_OFONO_Iface:
+      syslog(LOG_ERR, "%s",tr("Could not create an interface to ofono on the system bus").toUtf8().constData());
+    break;
     default:
       break;
     }
