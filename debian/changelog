@@ -1,8 +1,59 @@
-cmst (2016.10.03+gemian) stretch; urgency=medium
+cmst (2018.01.06+gemian) buster; urgency=medium
 
   * Branched for gemian
 
- -- Adam Boardman <adamboardman@gmail.com>  Sat, 3 May 2018 22:56:03 +0000
+ -- Adam Boardman <adamboardman@gmail.com>  Wed, 23 May 2018 10:56:03 +0000
+ 
+cmst (2018.01.06-3) unstable; urgency=medium
+
+  * Change policy group to "netdev" again (Closes: #893276)
+    Thanks robert <maxl1234@gmx.at>
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 18 Mar 2018 12:11:54 +0100
+
+cmst (2018.01.06-2) unstable; urgency=medium
+
+  * Fixed a typo in patch description
+  * Bumped debhelper to >= 11
+  * Bumped compat to 11 
+
+ -- Alf Gaida <agaida@siduction.org>  Sat, 17 Feb 2018 19:21:54 +0100
+
+cmst (2018.01.06-1) unstable; urgency=medium
+
+  * Cherry-picking upstream version 2018.01.06.
+  * Bumped Standards to 4.1.3, no changes needed
+  * Fixed VCS-Fields for salsa
+  * Bumped years in copyright
+  * Removed gbp.conf
+
+ -- Alf Gaida <agaida@siduction.org>  Tue, 09 Jan 2018 17:05:18 +0100
+
+cmst (2017.09.19-1) unstable; urgency=medium
+
+  * Cherry-picking upstream version 2017.09.19.
+  * Bump Standards to 4.1.0 - no changes needed.
+
+ -- Alf Gaida <agaida@siduction.org>  Thu, 21 Sep 2017 16:46:28 +0200
+
+cmst (2017.03.18-2) unstable; urgency=medium
+
+  * Removed the superfluous debian/docs
+
+ -- Alf Gaida <agaida@siduction.org>  Mon, 19 Jun 2017 02:19:21 +0200
+
+cmst (2017.03.18-1) unstable; urgency=medium
+
+  * Cherry-picking upstream version 2017.03.18.
+  * Bump Standards to 4.0.0
+  * Bumped years in copyright
+  * Fixed link to copyright format
+  * Dropped the outdated debian/README
+  * Removed obsolete dbus-policy.patch, applied upstream
+  * Removed obsolete keywords.patch, applied upstream
+  * Removed obsolete surpress-vpn-warning.patch, applied upstream
+
+ -- Alf Gaida <agaida@siduction.org>  Mon, 19 Jun 2017 01:05:33 +0200
 
 cmst (2016.10.03-2) unstable; urgency=medium
 
@@ -10,7 +61,7 @@ cmst (2016.10.03-2) unstable; urgency=medium
   * Added keywords.patch (already applied upstream
   * Added surpress-vpn-warning.patch, applied upstream
     (Closes: #842444)
- 
+
  -- Alf Gaida <agaida@siduction.org>  Sun, 06 Nov 2016 15:49:12 +0100
 
 cmst (2016.10.03-1) unstable; urgency=medium
@@ -24,7 +75,7 @@ cmst (2016.10.02-1) unstable; urgency=medium
   * Cherry-picking upstream version 2016.10.02.
   * Bumped minimim version debhelper (>= 10)
   * Bumped compat to 10
-  * Bumped standards to 3.9.8, no changes needed 
+  * Bumped standards to 3.9.8, no changes needed
   * Removed --parallel from rules, compat 10 standard
 
  -- Alf Gaida <agaida@siduction.org>  Sun, 02 Oct 2016 15:05:56 +0200
@@ -52,7 +103,7 @@ cmst (2016.04.03-1) unstable; urgency=medium
 cmst (2016.01.28-2) unstable; urgency=medium
 
   * Set Architecture: linux-any, cmst depends on connman what is
-    only available on linux architectures. Closes: #813166 
+    only available on linux architectures. Closes: #813166
 
  -- Alf Gaida <agaida@siduction.org>  Sat, 30 Jan 2016 11:26:23 +0100
 
@@ -62,7 +113,7 @@ cmst (2016.01.28-1) unstable; urgency=medium
   * Use safe VCS-links
   * Added hardening=+all
   * Changed years in copyright
-  * Added re-release patch to match the displayed version with 
+  * Added re-release patch to match the displayed version with
     tar-ball and package version
   * Added remove_DATE_TIME.patch to make reproducible builds possible
 

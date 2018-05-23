@@ -6,10 +6,10 @@ XSBC-Original-Maintainer: LXQt Packaging Team <pkg-lxqt-devel@lists.alioth.debia
 Uploaders: Unit 193 <unit193@ubuntu.com>,
            ChangZhuo Chen (陳昌倬) <czchen@debian.org>,
            Alf Gaida <agaida@siduction.org>
-Build-Depends: debhelper (>= 10),
+Build-Depends: debhelper (>= 11),
                qtbase5-dev,
                qt5-qmake
-Standards-Version: 3.9.8
+Standards-Version: 4.1.3
 Homepage: https://github.com/andrew-bibb/cmst
 Vcs-Git: https://github.com/gemian/cmst.git
 
