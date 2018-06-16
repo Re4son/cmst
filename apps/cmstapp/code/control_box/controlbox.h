@@ -114,6 +114,8 @@ class ControlBox : public QDialog
     Ui::ControlBox ui;
     quint16 q16_errors;
     QMap<QString,QVariant>  properties_map;
+    QMap<QString,QVariant>  ofono_connection_properties_map;
+    QMap<QString,QVariant>  ofono_radio_settings_properties_map;
     QList<arrayElement>     services_list;
     QList<arrayElement>     technologies_list;
     QList<arrayElement>     wifi_list;
@@ -182,6 +184,9 @@ class ControlBox : public QDialog
     void removePressed();
     void dbsPropertyChanged(QString,QDBusVariant);
     void dbsModemsChanged(QList<QVariant>, QList<QDBusObjectPath>, QDBusMessage);
+    void updateModemsMonitoring();
+    void dbsConnectionManagerPropertyChanged(QString, QDBusVariant, QDBusMessage);
+    void dbsRadioSettingsPropertyChanged(QString, QDBusVariant, QDBusMessage);
     void dbsServicesChanged(QList<QVariant>, QList<QDBusObjectPath>, QDBusMessage);
     void dbsPeersChanged(QList<QVariant>, QList<QDBusObjectPath>, QDBusMessage);
     void dbsServicePropertyChanged(QString, QDBusVariant, QDBusMessage);
@@ -195,11 +200,16 @@ class ControlBox : public QDialog
     void togglePowered(QString, bool);
     void toggleTethered(QString, bool);
     bool getModems();
+    void getOfonoSettings();
     void selectSim(QListWidgetItem*);
-    void toggleOfonoEnabled(bool);
     void toggleOfonoPowered(bool);
+    void toggleOfonoSimPowered(bool checked);
+    void toggleOfonoSimOnline(bool checked);
     void toggleMobileData(bool);
     void toggleMobileDataRoaming(bool);
+    void clickedRadioButton2G();
+    void clickedRadioButton3G();
+    void clickedRadioButton4G();
     void minMaxWindow(QAction* = 0);
     void techSubmenuTriggered(QAction* = 0);
     void infoSubmenuTriggered(QAction* = 0);

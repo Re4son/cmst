@@ -35,7 +35,7 @@
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <property name="movable">
       <bool>true</bool>
@@ -626,8 +626,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>647</width>
-            <height>487</height>
+            <width>633</width>
+            <height>553</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -637,13 +637,6 @@
               <string>Cellular</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_17">
-              <item>
-               <widget class="QCheckBox" name="checkBox_ofono_enabled">
-                <property name="text">
-                 <string>Enabled</string>
-                </property>
-               </widget>
-              </item>
               <item>
                <widget class="QCheckBox" name="checkBox_ofono_powered">
                 <property name="text">
@@ -655,7 +648,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="groupBox_4">
+            <widget class="QGroupBox" name="groupBox_sims">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="title">
               <string>SIM selection</string>
              </property>
@@ -663,57 +659,80 @@
               <item>
                <widget class="QListWidget" name="listWidget_sims"/>
               </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QGroupBox" name="groupBox_3">
-             <property name="title">
-              <string>Mobile Data</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_15">
               <item>
-               <widget class="QCheckBox" name="checkBox_mobile_data">
-                <property name="text">
+               <widget class="QGroupBox" name="groupBox_sim_state">
+                <property name="title">
+                 <string>Selected SIM</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_19">
+                 <item>
+                  <widget class="QCheckBox" name="checkBox_ofono_sim_powered">
+                   <property name="text">
+                    <string>Powered</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="checkBox_ofono_sim_online">
+                   <property name="text">
+                    <string>Online</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_3">
+                <property name="title">
                  <string>Mobile Data</string>
                 </property>
+                <layout class="QVBoxLayout" name="verticalLayout_15">
+                 <item>
+                  <widget class="QCheckBox" name="checkBox_mobile_data">
+                   <property name="text">
+                    <string>Mobile Data</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="checkBox_moblie_data_roaming">
+                   <property name="text">
+                    <string>Data roaming</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="checkBox_moblie_data_roaming">
-                <property name="text">
-                 <string>Data roaming</string>
+               <widget class="QGroupBox" name="groupBox">
+                <property name="title">
+                 <string>Connection type</string>
                 </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QGroupBox" name="groupBox">
-             <property name="title">
-              <string>Connection type</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_14">
-              <item>
-               <widget class="QRadioButton" name="radioButton_2g">
-                <property name="text">
-                 <string>&amp;2G only (saves battery)</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="radioButton_3g">
-                <property name="text">
-                 <string>2G/&amp;3G (faster)</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="radioButton_4g">
-                <property name="text">
-                 <string>2G/3G/&amp;4G (fastest)</string>
-                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_14">
+                 <item>
+                  <widget class="QRadioButton" name="radioButton_2g">
+                   <property name="text">
+                    <string>&amp;2G only (saves battery)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="radioButton_3g">
+                   <property name="text">
+                    <string>2G/&amp;3G (faster)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="radioButton_4g">
+                   <property name="text">
+                    <string>2G/3G/&amp;4G (fastest)</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </widget>
               </item>
              </layout>
@@ -1889,7 +1908,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>528</width>
+            <width>524</width>
             <height>487</height>
            </rect>
           </property>

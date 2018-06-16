@@ -366,6 +366,7 @@ ControlBox::ControlBox(const QCommandLineParser& parser, QWidget *parent)
           ui.tabWidget->setTabEnabled(ui.tabWidget->indexOf(ui.Mobile), true);
           getModems();
           QDBusConnection::systemBus().connect(DBUS_OFONO_SERVICE, DBUS_PATH, DBUS_OFONO_MANAGER, "ModemsChanged", this, SLOT(dbsModemsChanged(QList<QVariant>, QList<QDBusObjectPath>, QDBusMessage)));
+          updateModemsMonitoring();
       }
 
       // VPN manager. Disable if commandline or option is set
@@ -438,10 +439,14 @@ ControlBox::ControlBox(const QCommandLineParser& parser, QWidget *parent)
   connect(ui.checkBox_systemtraynotifications, SIGNAL (clicked(bool)), this, SLOT(trayNotifications(bool)));
   connect(ui.checkBox_notifydaemon, SIGNAL (clicked(bool)), this, SLOT(daemonNotifications(bool)));
   connect(ui.listWidget_sims, SIGNAL (itemClicked(QListWidgetItem*)), this, SLOT(selectSim(QListWidgetItem*)));
-  connect(ui.checkBox_ofono_enabled, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoEnabled(bool)));
   connect(ui.checkBox_ofono_powered, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoPowered(bool)));
+  connect(ui.checkBox_ofono_sim_online, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoSimOnline(bool)));
+  connect(ui.checkBox_ofono_sim_powered, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoSimPowered(bool)));
   connect(ui.checkBox_mobile_data, SIGNAL (toggled(bool)), this, SLOT(toggleMobileData(bool)));
   connect(ui.checkBox_moblie_data_roaming, SIGNAL (toggled(bool)), this, SLOT(toggleMobileDataRoaming(bool)));
+  connect(ui.radioButton_2g, SIGNAL (clicked()), this, SLOT(clickedRadioButton2G()));
+  connect(ui.radioButton_3g, SIGNAL (clicked()), this, SLOT(clickedRadioButton3G()));
+  connect(ui.radioButton_4g, SIGNAL (clicked()), this, SLOT(clickedRadioButton4G()));
   connect(ui.pushButton_configuration, SIGNAL (clicked()), this, SLOT(configureService()));
   connect(ui.pushButton_provisioning_editor, SIGNAL (clicked()), this, SLOT(provisionService()));
   connect(ui.pushButton_vpn_editor, SIGNAL (clicked()), this, SLOT(provisionService()));
@@ -872,6 +877,8 @@ void ControlBox::removePressed()
 //  Slot called whenever DBUS issues a PropertyChanged signal
 void ControlBox::dbsPropertyChanged(QString prop, QDBusVariant dbvalue)
 {
+  qDebug() << "ControlBox::dbsPropertyChanged" << prop << dbvalue.variant();
+
   // save current state and update propertiesMap
   QString oldstate = properties_map.value(prop).toString();
   properties_map.insert(prop, dbvalue.variant() );
@@ -943,7 +950,32 @@ bool ControlBox::getModems()
 
   // call the function to get the map values
   sim_list.clear();
-  return getArray(sim_list, reply);
+  auto modems = getArray(sim_list, reply);
+  qDebug() << "ControlBox::getModems" << sim_list.at(selected_sim).objmap;
+  return modems;
+}
+
+void ControlBox::getOfonoSettings()
+{
+  auto path = sim_list.at(selected_sim).objpath.path();
+
+  QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, path, "org.ofono.ConnectionManager", QDBusConnection::systemBus(), this);
+  auto reply = iface_tech->call(QDBus::AutoDetect, "GetProperties");
+  shared::processReply(reply);
+
+  // call the function to get the map values
+  ofono_connection_properties_map.clear();
+  getMap(ofono_connection_properties_map, reply);
+
+  iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, path, "org.ofono.RadioSettings", QDBusConnection::systemBus(), this);
+  reply = iface_tech->call(QDBus::AutoDetect, "GetProperties");
+  shared::processReply(reply);
+
+  // call the function to get the map values
+  ofono_radio_settings_properties_map.clear();
+  getMap(ofono_radio_settings_properties_map, reply);
+
+  qDebug() << "ControlBox::getOfonoSettings" << path << ", connection properties: "  << ofono_connection_properties_map << ", radio settings: " << ofono_radio_settings_properties_map;
 }
 
 void ControlBox::dbsModemsChanged(QList<QVariant> vlist, QList<QDBusObjectPath> changed, QDBusMessage msg)
@@ -958,7 +990,44 @@ void ControlBox::dbsModemsChanged(QList<QVariant> vlist, QList<QDBusObjectPath> 
     sim_list = revised_list;
     updateDisplayWidgets();
   }
+  updateModemsMonitoring();
 }
+
+void ControlBox::updateModemsMonitoring() {
+    auto path = sim_list.at(selected_sim).objpath.path();
+    qDebug() << "ControlBox::updateModemsMonitoring" << path;
+
+    QDBusConnection::systemBus().disconnect(DBUS_OFONO_SERVICE, path, "org.ofono.ConnectionManager", "PropertyChanged", this, SLOT(dbsConnectionManagerPropertyChanged(QString, QDBusVariant, QDBusMessage)));
+    QDBusConnection::systemBus().disconnect(DBUS_OFONO_SERVICE, path, "org.ofono.RadioSettings", "PropertyChanged", this, SLOT(dbsRadioSettingsPropertyChanged(QString, QDBusVariant, QDBusMessage)));
+    QDBusConnection::systemBus().connect(DBUS_OFONO_SERVICE, path, "org.ofono.ConnectionManager", "PropertyChanged", this, SLOT(dbsConnectionManagerPropertyChanged(QString, QDBusVariant, QDBusMessage)));
+    QDBusConnection::systemBus().connect(DBUS_OFONO_SERVICE, path, "org.ofono.RadioSettings", "PropertyChanged", this, SLOT(dbsRadioSettingsPropertyChanged(QString, QDBusVariant, QDBusMessage)));
+
+    getOfonoSettings();
+}
+
+void ControlBox::dbsConnectionManagerPropertyChanged(QString property, QDBusVariant dbvalue, QDBusMessage msg)
+{
+  QString s_path = msg.path();
+  QVariant value = dbvalue.variant();
+
+  qDebug() << "ControlBox::dbsConnectionManagerPropertyChanged" << property << s_path << value;
+  ofono_connection_properties_map.insert(property, value);
+
+  if (property == "Attached") {
+    getModems();
+    updateDisplayWidgets();
+  }
+}
+
+void ControlBox::dbsRadioSettingsPropertyChanged(QString property, QDBusVariant dbvalue, QDBusMessage msg)
+{
+  QString s_path = msg.path();
+  QVariant value = dbvalue.variant();
+
+  qDebug() << "ControlBox::dbsConnectionManagerPropertyChanged" << property << s_path << value;
+  ofono_radio_settings_properties_map.insert(property, value);
+}
+
 
 //
 // Slot called whenever DBUS issues a ServicesChanged signal.  When a
@@ -968,6 +1037,8 @@ void ControlBox::dbsModemsChanged(QList<QVariant> vlist, QList<QDBusObjectPath> 
 // of a service object changes.
 void ControlBox::dbsServicesChanged(QList<QVariant> vlist, QList<QDBusObjectPath> removed, QDBusMessage msg)
 {
+  qDebug() << "ControlBox::dbsServicesChanged";
+
   // process removed services
   if (! removed.isEmpty() ) {
     for (int i = 0; i < services_list.count(); ++i) {
@@ -1031,6 +1102,8 @@ void ControlBox::dbsServicesChanged(QList<QVariant> vlist, QList<QDBusObjectPath
 // scan results being signaled here.
 void ControlBox::dbsPeersChanged(QList<QVariant> vlist, QList<QDBusObjectPath> removed, QDBusMessage msg)
 {
+  qDebug() << "ControlBox::dbsPeersChanged";
+
   // Set the update flag
   bool b_needupdate = false;
 
@@ -1153,6 +1226,8 @@ void ControlBox::dbsServicePropertyChanged(QString property, QDBusVariant dbvalu
   QVariant value = dbvalue.variant();
   QString s_state;
 
+  qDebug() << "ControlBox::dbsServicePropertyChanged" << property << value;
+
   // replace the old values with the changed ones.
   for (int i = 0; i < services_list.count(); ++i) {
     if (s_path == services_list.at(i).objpath.path() ) {
@@ -1216,6 +1291,8 @@ void ControlBox::dbsServicePropertyChanged(QString property, QDBusVariant dbvalu
 void ControlBox::dbsTechnologyPropertyChanged(QString name, QDBusVariant dbvalue, QDBusMessage msg)
 {
   QString s_path = msg.path();
+
+  qDebug() << "ControlBox::dbsTechnologyPropertyChanged" << name << dbvalue.variant() << s_path;
 
   // replace the old values with the changed ones.
   for (int i = 0; i < technologies_list.count(); ++i) {
@@ -1389,27 +1466,62 @@ void ControlBox::selectSim(QListWidgetItem *item)
     }
   }
   selected_sim = index;
-}
-
-void ControlBox::toggleOfonoEnabled(bool)
-{
-    //ofono(UBPorts) + connman(stretch) seems to require a restart of ofono whilst cmst is running for it to keep the itself available, maybe do that here?
+  updateModemsMonitoring();
 }
 
 void ControlBox::toggleOfonoPowered(bool checked)
 {
-    if ( ((q16_errors & CMST::Err_No_DBus) | (q16_errors & CMST::Err_Invalid_Con_Iface)) != 0x00 ) return;
+  if ( ((q16_errors & CMST::Err_No_DBus) | (q16_errors & CMST::Err_Invalid_Con_Iface)) != 0x00 ) return;
 
+  auto powered = !checked;
+  for (int i = 0; i < technologies_list.size(); i++) {
+    if (technologies_list.at(i).objpath.path() == "/net/connman/technology/cellular") {
+      auto settings = technologies_list.at(i).objmap;
+      powered = (settings.find("Powered").value().isValid()) ? settings.find("Powered").value().toBool() : false;
+    }
+  }
+  if (powered != checked) {
     QDBusInterface* iface_tech = new QDBusInterface(DBUS_CON_SERVICE, "/net/connman/technology/cellular", "net.connman.Technology", QDBusConnection::systemBus(), this);
     shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "Powered", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
+  }
+  qDebug() << "ControlBox::toggleOfonoPowered" << checked;
+}
+
+void ControlBox::toggleOfonoSimPowered(bool checked)
+{
+  if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00  || sim_list.size() == 0 || selected_sim > sim_list.size()-1) return;
+
+  auto settings = sim_list.at(selected_sim).objmap;
+  auto powered = (settings.value("Powered").isValid()) ? settings.value("Powered").toBool() : false;
+
+  if (powered != checked) {
+    QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), DBUS_OFONO_MANAGER, QDBusConnection::systemBus(), this);
+    shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "Powered", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
+  }
+  qDebug() << "ControlBox::toggleOfonoSimPowered" << checked;
+}
+
+void ControlBox::toggleOfonoSimOnline(bool checked)
+{
+  if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00  || sim_list.size() == 0 || selected_sim > sim_list.size()-1) return;
+
+  auto settings = sim_list.at(selected_sim).objmap;
+  auto online = (settings.value("Online").isValid()) ? settings.value("Online").toBool() : false;
+
+  if (online != checked) {
+    QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), DBUS_OFONO_MANAGER, QDBusConnection::systemBus(), this);
+    shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "Online", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
+  }
+  qDebug() << "ControlBox::toggleOfonoSimOnline" << checked;
 }
 
 void ControlBox::toggleMobileData(bool checked)
 {
-    if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00  || sim_list.size() == 0 || selected_sim > sim_list.size()-1 ) return;
+    if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00  || sim_list.size() == 0 || selected_sim > sim_list.size()-1) return;
 
     QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), "org.ofono.ConnectionManager", QDBusConnection::systemBus(), this);
     shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "Powered", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
+    qDebug() << "ControlBox::toggleMobileData" << checked;
 }
 
 void ControlBox::toggleMobileDataRoaming(bool checked)
@@ -1418,6 +1530,34 @@ void ControlBox::toggleMobileDataRoaming(bool checked)
 
     QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), "org.ofono.ConnectionManager", QDBusConnection::systemBus(), this);
     shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "RoamingAllowed", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
+    qDebug() << "ControlBox::toggleMobileDataRoaming" << checked;
+}
+
+void ControlBox::clickedRadioButton2G()
+{
+    if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00 ) return;
+
+    QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), "org.ofono.RadioSettings", QDBusConnection::systemBus(), this);
+    shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "TechnologyPreference", QVariant::fromValue(QDBusVariant("gsm"))) );
+    qDebug() << "ControlBox::clickedRadioButton2G";
+}
+
+void ControlBox::clickedRadioButton3G()
+{
+    if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00 ) return;
+
+    QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), "org.ofono.RadioSettings", QDBusConnection::systemBus(), this);
+    shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "TechnologyPreference", QVariant::fromValue(QDBusVariant("umts"))) );
+    qDebug() << "ControlBox::clickedRadioButton3G";
+}
+
+void ControlBox::clickedRadioButton4G()
+{
+    if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00 ) return;
+
+    QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), "org.ofono.RadioSettings", QDBusConnection::systemBus(), this);
+    shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "TechnologyPreference", QVariant::fromValue(QDBusVariant("lte"))) );
+    qDebug() << "ControlBox::clickedRadioButton4G";
 }
 
 //
@@ -1995,7 +2135,41 @@ void ControlBox::assembleTabMobile()
   }
   ui.listWidget_sims->setCurrentRow(selected_sim);
 
+  for (int i = 0; i < technologies_list.size(); i++) {
+    if (technologies_list.at(i).objpath.path() == "/net/connman/technology/cellular") {
+      auto settings = technologies_list.at(i).objmap;
+      qDebug() << "ControlBox::assembleTabMobile"  << technologies_list.at(i).objpath.path() << settings;
 
+      auto powered = (settings.find("Powered").value().isValid()) ? settings.find("Powered").value().toBool() : false;
+
+      ui.checkBox_ofono_powered->setChecked(powered);
+      ui.groupBox_sims->setEnabled(powered);
+    }
+  }
+
+  auto settings = sim_list.at(selected_sim).objmap;
+  auto powered = (settings.value("Powered").isValid()) ? settings.value("Powered").toBool() : false;
+  ui.checkBox_ofono_sim_powered->setChecked(powered);
+  auto online = (settings.value("Online").isValid()) ? settings.value("Online").toBool() : false;
+  ui.checkBox_ofono_sim_online->setChecked(online);
+
+  auto mobile_data = (ofono_connection_properties_map.value("Powered").isValid()) ? ofono_connection_properties_map.value("Powered").toBool() : false;
+  ui.checkBox_mobile_data->setChecked(mobile_data);
+  auto mobile_data_roaming = (ofono_connection_properties_map.value("RoamingAllowed").isValid()) ? ofono_connection_properties_map.value("RoamingAllowed").toBool() : false;
+  ui.checkBox_moblie_data_roaming->setChecked(mobile_data_roaming);
+
+  QString tech_pref = (ofono_radio_settings_properties_map.value("TechnologyPreference").isValid()) ? ofono_radio_settings_properties_map.value("TechnologyPreference").toString() : "";
+  if (tech_pref == "gsm") {
+    ui.radioButton_2g->setChecked(true);
+  } else if (tech_pref == "umts") {
+    ui.radioButton_3g->setChecked(true);
+  } else if (tech_pref == "lte") {
+    ui.radioButton_4g->setChecked(true);
+  } else {
+    ui.radioButton_2g->setChecked(false);
+    ui.radioButton_3g->setChecked(false);
+    ui.radioButton_4g->setChecked(false);
+  }
 }
 
 //
