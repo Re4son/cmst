@@ -994,6 +994,7 @@ void ControlBox::dbsModemsChanged(QList<QVariant> vlist, QList<QDBusObjectPath> 
 }
 
 void ControlBox::updateModemsMonitoring() {
+  if (sim_list.size() > 0) {
     auto path = sim_list.at(selected_sim).objpath.path();
     qDebug() << "ControlBox::updateModemsMonitoring" << path;
 
@@ -1003,6 +1004,7 @@ void ControlBox::updateModemsMonitoring() {
     QDBusConnection::systemBus().connect(DBUS_OFONO_SERVICE, path, "org.ofono.RadioSettings", "PropertyChanged", this, SLOT(dbsRadioSettingsPropertyChanged(QString, QDBusVariant, QDBusMessage)));
 
     getOfonoSettings();
+  }
 }
 
 void ControlBox::dbsConnectionManagerPropertyChanged(QString property, QDBusVariant dbvalue, QDBusMessage msg)
