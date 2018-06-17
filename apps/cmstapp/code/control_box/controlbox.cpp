@@ -2149,28 +2149,30 @@ void ControlBox::assembleTabMobile()
     }
   }
 
-  auto settings = sim_list.at(selected_sim).objmap;
-  auto powered = (settings.value("Powered").isValid()) ? settings.value("Powered").toBool() : false;
-  ui.checkBox_ofono_sim_powered->setChecked(powered);
-  auto online = (settings.value("Online").isValid()) ? settings.value("Online").toBool() : false;
-  ui.checkBox_ofono_sim_online->setChecked(online);
+  if (sim_list.size() > 0) {
+    auto settings = sim_list.at(selected_sim).objmap;
+    auto powered = (settings.value("Powered").isValid()) ? settings.value("Powered").toBool() : false;
+    ui.checkBox_ofono_sim_powered->setChecked(powered);
+    auto online = (settings.value("Online").isValid()) ? settings.value("Online").toBool() : false;
+    ui.checkBox_ofono_sim_online->setChecked(online);
 
-  auto mobile_data = (ofono_connection_properties_map.value("Powered").isValid()) ? ofono_connection_properties_map.value("Powered").toBool() : false;
-  ui.checkBox_mobile_data->setChecked(mobile_data);
-  auto mobile_data_roaming = (ofono_connection_properties_map.value("RoamingAllowed").isValid()) ? ofono_connection_properties_map.value("RoamingAllowed").toBool() : false;
-  ui.checkBox_moblie_data_roaming->setChecked(mobile_data_roaming);
+    auto mobile_data = (ofono_connection_properties_map.value("Powered").isValid()) ? ofono_connection_properties_map.value("Powered").toBool() : false;
+    ui.checkBox_mobile_data->setChecked(mobile_data);
+    auto mobile_data_roaming = (ofono_connection_properties_map.value("RoamingAllowed").isValid()) ? ofono_connection_properties_map.value("RoamingAllowed").toBool() : false;
+    ui.checkBox_moblie_data_roaming->setChecked(mobile_data_roaming);
 
-  QString tech_pref = (ofono_radio_settings_properties_map.value("TechnologyPreference").isValid()) ? ofono_radio_settings_properties_map.value("TechnologyPreference").toString() : "";
-  if (tech_pref == "gsm") {
-    ui.radioButton_2g->setChecked(true);
-  } else if (tech_pref == "umts") {
-    ui.radioButton_3g->setChecked(true);
-  } else if (tech_pref == "lte") {
-    ui.radioButton_4g->setChecked(true);
-  } else {
-    ui.radioButton_2g->setChecked(false);
-    ui.radioButton_3g->setChecked(false);
-    ui.radioButton_4g->setChecked(false);
+    QString tech_pref = (ofono_radio_settings_properties_map.value("TechnologyPreference").isValid()) ? ofono_radio_settings_properties_map.value("TechnologyPreference").toString() : "";
+    if (tech_pref == "gsm") {
+      ui.radioButton_2g->setChecked(true);
+    } else if (tech_pref == "umts") {
+      ui.radioButton_3g->setChecked(true);
+    } else if (tech_pref == "lte") {
+      ui.radioButton_4g->setChecked(true);
+    } else {
+      ui.radioButton_2g->setChecked(false);
+      ui.radioButton_3g->setChecked(false);
+      ui.radioButton_4g->setChecked(false);
+    }
   }
 }
 
