@@ -944,15 +944,15 @@ void ControlBox::dbsPropertyChanged(QString prop, QDBusVariant dbvalue)
 
 bool ControlBox::getModems()
 {
+  qDebug() << "ControlBox::getModems";
+
   // call ofono and GetServices
   QDBusMessage reply = ofono_manager->call("GetModems");
   shared::processReply(reply);
 
   // call the function to get the map values
   sim_list.clear();
-  auto modems = getArray(sim_list, reply);
-  qDebug() << "ControlBox::getModems" << sim_list.at(selected_sim).objmap;
-  return modems;
+  return getArray(sim_list, reply);
 }
 
 void ControlBox::getOfonoSettings()
