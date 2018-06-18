@@ -1329,7 +1329,7 @@ void ControlBox::scanWiFi()
   for (int row = 0; row < technologies_list.size(); ++row) {
     if (technologies_list.at(row).objmap.value("Type").toString() == "wifi") {
       if (technologies_list.at(row).objmap.value("Powered").toBool() ) {
-				setStateRescan(false);
+        setStateRescan(false);
         ui.tableWidget_services->setCurrentIndex(QModelIndex()); // first cell becomes selected once pushbutton is disabled
         qApp->processEvents();  // needed to promply disable the button
         QDBusInterface* iface_tech = new QDBusInterface(DBUS_CON_SERVICE, technologies_list.at(row).objpath.path(), "net.connman.Technology", QDBusConnection::systemBus(), this);
