@@ -994,7 +994,9 @@ void ControlBox::dbsModemsChanged(QList<QVariant> vlist, QList<QDBusObjectPath> 
 }
 
 void ControlBox::updateModemsMonitoring() {
-  if (sim_list.size() > 0) {
+  auto mobile_data = (ofono_connection_properties_map.value("Powered").isValid()) ? ofono_connection_properties_map.value("Powered").toBool() : false;
+
+  if (sim_list.size() > 0 && mobile_data) {
     auto path = sim_list.at(selected_sim).objpath.path();
     qDebug() << "ControlBox::updateModemsMonitoring" << path;
 
