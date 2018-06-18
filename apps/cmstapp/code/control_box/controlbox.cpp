@@ -2087,6 +2087,22 @@ void ControlBox::assembleTabStatus()
     ui.tableWidget_services->resizeColumnToContents(1);
     ui.tableWidget_services->resizeColumnToContents(2);
 
+    int height = 0;
+    ui.tableWidget_services->resizeRowsToContents();
+    for (int i = 0; i < ui.tableWidget_services->rowCount(); i++) {
+        height += ui.tableWidget_services->rowHeight(i);
+    }
+
+    int left, top, right, bottom;
+    ui.tableWidget_services->getContentsMargins(&left, &top, &right, &bottom);
+    height += top + bottom;
+    height += ui.tableWidget_services->horizontalHeader()->frameSize().height();
+    if (ui.tableWidget_services->horizontalScrollBar()) {
+        height += ui.tableWidget_services->horizontalScrollBar()->height();
+    }
+
+    ui.tableWidget_services->setMinimumHeight(height);
+
   } // services if no error
 
   return;
@@ -2138,6 +2154,20 @@ void ControlBox::assembleTabMobile()
     ui.listWidget_sims->addItem(qtsi00);
   }
   ui.listWidget_sims->setCurrentRow(selected_sim);
+
+  int height = 0;
+  for (int i = 0; i < sim_list.size(); i++) {
+      height += ui.listWidget_sims->item(i)->sizeHint().height();
+  }
+
+  int left, top, right, bottom;
+  ui.listWidget_sims->getContentsMargins(&left, &top, &right, &bottom);
+  height += top + bottom;
+  if (ui.listWidget_sims->horizontalScrollBar()) {
+      height += ui.listWidget_sims->horizontalScrollBar()->height();
+  }
+
+  ui.listWidget_sims->setMinimumHeight(height);
 
   for (int i = 0; i < technologies_list.size(); i++) {
     if (technologies_list.at(i).objpath.path() == "/net/connman/technology/cellular") {
