@@ -689,14 +689,14 @@
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_15">
                  <item>
-                  <widget class="QCheckBox" name="checkBox_mobile_data">
+                  <widget class="QCheckBox" name="checkBox_sim_mobile_data">
                    <property name="text">
                     <string>Mobile Data</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QCheckBox" name="checkBox_moblie_data_roaming">
+                  <widget class="QCheckBox" name="checkBox_sim_moblie_data_roaming">
                    <property name="text">
                     <string>Data roaming</string>
                    </property>

@@ -205,8 +205,8 @@ class ControlBox : public QDialog
     void toggleOfonoPowered(bool);
     void toggleOfonoSimPowered(bool checked);
     void toggleOfonoSimOnline(bool checked);
-    void toggleMobileData(bool);
-    void toggleMobileDataRoaming(bool);
+    void toggleSimMobileData(bool);
+    void toggleSimMobileDataRoaming(bool);
     void clickedRadioButton2G();
     void clickedRadioButton3G();
     void clickedRadioButton4G();

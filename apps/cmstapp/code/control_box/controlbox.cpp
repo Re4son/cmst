@@ -442,8 +442,8 @@ ControlBox::ControlBox(const QCommandLineParser& parser, QWidget *parent)
   connect(ui.checkBox_ofono_powered, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoPowered(bool)));
   connect(ui.checkBox_ofono_sim_online, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoSimOnline(bool)));
   connect(ui.checkBox_ofono_sim_powered, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoSimPowered(bool)));
-  connect(ui.checkBox_mobile_data, SIGNAL (toggled(bool)), this, SLOT(toggleMobileData(bool)));
-  connect(ui.checkBox_moblie_data_roaming, SIGNAL (toggled(bool)), this, SLOT(toggleMobileDataRoaming(bool)));
+  connect(ui.checkBox_sim_mobile_data, SIGNAL (toggled(bool)), this, SLOT(toggleSimMobileData(bool)));
+  connect(ui.checkBox_sim_moblie_data_roaming, SIGNAL (toggled(bool)), this, SLOT(toggleSimMobileDataRoaming(bool)));
   connect(ui.radioButton_2g, SIGNAL (clicked()), this, SLOT(clickedRadioButton2G()));
   connect(ui.radioButton_3g, SIGNAL (clicked()), this, SLOT(clickedRadioButton3G()));
   connect(ui.radioButton_4g, SIGNAL (clicked()), this, SLOT(clickedRadioButton4G()));
@@ -1519,22 +1519,22 @@ void ControlBox::toggleOfonoSimOnline(bool checked)
   qDebug() << "ControlBox::toggleOfonoSimOnline" << checked;
 }
 
-void ControlBox::toggleMobileData(bool checked)
+void ControlBox::toggleSimMobileData(bool checked)
 {
     if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00  || sim_list.size() == 0 || selected_sim > sim_list.size()-1) return;
 
     QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), "org.ofono.ConnectionManager", QDBusConnection::systemBus(), this);
     shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "Powered", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
-    qDebug() << "ControlBox::toggleMobileData" << checked;
+    qDebug() << "ControlBox::toggleSimMobileData" << checked;
 }
 
-void ControlBox::toggleMobileDataRoaming(bool checked)
+void ControlBox::toggleSimMobileDataRoaming(bool checked)
 {
     if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00  || sim_list.size() == 0 || selected_sim > sim_list.size()-1 ) return;
 
     QDBusInterface* iface_tech = new QDBusInterface(DBUS_OFONO_SERVICE, sim_list.at(selected_sim).objpath.path(), "org.ofono.ConnectionManager", QDBusConnection::systemBus(), this);
     shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "RoamingAllowed", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
-    qDebug() << "ControlBox::toggleMobileDataRoaming" << checked;
+    qDebug() << "ControlBox::toggleSimMobileDataRoaming" << checked;
 }
 
 void ControlBox::clickedRadioButton2G()
@@ -2189,9 +2189,9 @@ void ControlBox::assembleTabMobile()
     ui.checkBox_ofono_sim_online->setChecked(online);
 
     auto mobile_data = (ofono_connection_properties_map.value("Powered").isValid()) ? ofono_connection_properties_map.value("Powered").toBool() : false;
-    ui.checkBox_mobile_data->setChecked(mobile_data);
+    ui.checkBox_sim_mobile_data->setChecked(mobile_data);
     auto mobile_data_roaming = (ofono_connection_properties_map.value("RoamingAllowed").isValid()) ? ofono_connection_properties_map.value("RoamingAllowed").toBool() : false;
-    ui.checkBox_moblie_data_roaming->setChecked(mobile_data_roaming);
+    ui.checkBox_sim_moblie_data_roaming->setChecked(mobile_data_roaming);
 
     QString tech_pref = (ofono_radio_settings_properties_map.value("TechnologyPreference").isValid()) ? ofono_radio_settings_properties_map.value("TechnologyPreference").toString() : "";
     if (tech_pref == "gsm") {
