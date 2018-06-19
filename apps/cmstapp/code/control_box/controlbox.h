@@ -163,6 +163,7 @@ class ControlBox : public QDialog
     void assembleTabCounters();
     void assembleTrayIcon();
     void sendNotifications();
+    bool getMobileDataEnabled();
     bool getProperties();
     bool getTechnologies();   
     bool getServices();
@@ -203,6 +204,7 @@ class ControlBox : public QDialog
     void getOfonoSettings();
     void selectSim(QListWidgetItem*);
     void toggleOfonoPowered(bool);
+    void toggleMobileData(bool);
     void toggleOfonoSimPowered(bool checked);
     void toggleOfonoSimOnline(bool checked);
     void toggleSimMobileData(bool);

@@ -440,10 +440,11 @@ ControlBox::ControlBox(const QCommandLineParser& parser, QWidget *parent)
   connect(ui.checkBox_notifydaemon, SIGNAL (clicked(bool)), this, SLOT(daemonNotifications(bool)));
   connect(ui.listWidget_sims, SIGNAL (itemClicked(QListWidgetItem*)), this, SLOT(selectSim(QListWidgetItem*)));
   connect(ui.checkBox_ofono_powered, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoPowered(bool)));
+  connect(ui.checkBox_mobile_data, SIGNAL (toggled(bool)), this, SLOT(toggleMobileData(bool)));
   connect(ui.checkBox_ofono_sim_online, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoSimOnline(bool)));
   connect(ui.checkBox_ofono_sim_powered, SIGNAL (toggled(bool)), this, SLOT(toggleOfonoSimPowered(bool)));
   connect(ui.checkBox_sim_mobile_data, SIGNAL (toggled(bool)), this, SLOT(toggleSimMobileData(bool)));
-  connect(ui.checkBox_sim_moblie_data_roaming, SIGNAL (toggled(bool)), this, SLOT(toggleSimMobileDataRoaming(bool)));
+  connect(ui.checkBox_sim_mobile_data_roaming, SIGNAL (toggled(bool)), this, SLOT(toggleSimMobileDataRoaming(bool)));
   connect(ui.radioButton_2g, SIGNAL (clicked()), this, SLOT(clickedRadioButton2G()));
   connect(ui.radioButton_3g, SIGNAL (clicked()), this, SLOT(clickedRadioButton3G()));
   connect(ui.radioButton_4g, SIGNAL (clicked()), this, SLOT(clickedRadioButton4G()));
@@ -1491,6 +1492,21 @@ void ControlBox::toggleOfonoPowered(bool checked)
   qDebug() << "ControlBox::toggleOfonoPowered" << checked;
 }
 
+void ControlBox::toggleMobileData(bool checked)
+{
+  if (getMobileDataEnabled() != checked) {
+    for (int row = 0; row < services_list.size(); ++row) {
+      auto service = services_list.at(row);
+      qDebug() << "ControlBox::toggleMobileData" << service.objpath.path() << service.objmap;
+      if (service.objmap.value("Type") == "cellular") {
+        QDBusInterface* iface_tech = new QDBusInterface(DBUS_CON_SERVICE, service.objpath.path(), "net.connman.Service", QDBusConnection::systemBus(), this);
+        shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "Favorite", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
+        shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "AutoConnect", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
+      }
+    }
+  }
+}
+
 void ControlBox::toggleOfonoSimPowered(bool checked)
 {
   if ( ((q16_errors & CMST::Err_No_DBus) || (q16_errors & CMST::Err_Invalid_OFONO_Iface)) != 0x00  || sim_list.size() == 0 || selected_sim > sim_list.size()-1) return;
@@ -2143,6 +2159,21 @@ void ControlBox::assembleTabDetails()
   return;
 }
 
+bool ControlBox::getMobileDataEnabled()
+{
+  bool moblieDataEnabled = false;
+  for (int row = 0; row < services_list.size(); ++row) {
+    auto service = services_list.at(row);
+    qDebug() << "ControlBox::assembleTabMobile" << service.objpath.path() << service.objmap;
+    if (service.objmap.value("Type") == "cellular") {
+      if (service.objmap.value("Favorite").toBool() && service.objmap.value("AutoConnect").toBool()) {
+        moblieDataEnabled = true;
+      }
+    }
+  }
+  return moblieDataEnabled;
+}
+
 void ControlBox::assembleTabMobile()
 {
   ui.listWidget_sims->clear();
@@ -2181,6 +2212,8 @@ void ControlBox::assembleTabMobile()
     }
   }
 
+  ui.checkBox_mobile_data->setChecked(getMobileDataEnabled());
+
   if (sim_list.size() > 0) {
     auto settings = sim_list.at(selected_sim).objmap;
     auto powered = (settings.value("Powered").isValid()) ? settings.value("Powered").toBool() : false;
@@ -2191,7 +2224,7 @@ void ControlBox::assembleTabMobile()
     auto mobile_data = (ofono_connection_properties_map.value("Powered").isValid()) ? ofono_connection_properties_map.value("Powered").toBool() : false;
     ui.checkBox_sim_mobile_data->setChecked(mobile_data);
     auto mobile_data_roaming = (ofono_connection_properties_map.value("RoamingAllowed").isValid()) ? ofono_connection_properties_map.value("RoamingAllowed").toBool() : false;
-    ui.checkBox_sim_moblie_data_roaming->setChecked(mobile_data_roaming);
+    ui.checkBox_sim_mobile_data_roaming->setChecked(mobile_data_roaming);
 
     QString tech_pref = (ofono_radio_settings_properties_map.value("TechnologyPreference").isValid()) ? ofono_radio_settings_properties_map.value("TechnologyPreference").toString() : "";
     if (tech_pref == "gsm") {

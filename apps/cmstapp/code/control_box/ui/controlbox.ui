@@ -627,7 +627,7 @@
             <x>0</x>
             <y>0</y>
             <width>633</width>
-            <height>553</height>
+            <height>583</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -641,6 +641,13 @@
                <widget class="QCheckBox" name="checkBox_ofono_powered">
                 <property name="text">
                  <string>Powered</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkBox_mobile_data">
+                <property name="text">
+                 <string>Mobile Data</string>
                 </property>
                </widget>
               </item>
@@ -696,7 +703,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QCheckBox" name="checkBox_sim_moblie_data_roaming">
+                  <widget class="QCheckBox" name="checkBox_sim_mobile_data_roaming">
                    <property name="text">
                     <string>Data roaming</string>
                    </property>
