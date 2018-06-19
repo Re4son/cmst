@@ -1500,7 +1500,6 @@ void ControlBox::toggleMobileData(bool checked)
       qDebug() << "ControlBox::toggleMobileData" << service.objpath.path() << service.objmap;
       if (service.objmap.value("Type") == "cellular") {
         QDBusInterface* iface_tech = new QDBusInterface(DBUS_CON_SERVICE, service.objpath.path(), "net.connman.Service", QDBusConnection::systemBus(), this);
-        shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "Favorite", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
         shared::processReply(iface_tech->call(QDBus::AutoDetect, "SetProperty", "AutoConnect", QVariant::fromValue(QDBusVariant(checked ? true : false))) );
       }
     }
